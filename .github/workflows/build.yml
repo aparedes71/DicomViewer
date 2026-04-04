@@ -35,15 +35,10 @@ jobs:
           opencv-installer.exe -oC:\ -y
           del opencv-installer.exe
 
-      - name: Debug OpenCV directory structure
-        shell: pwsh
-        run: |
-          Get-ChildItem "C:\opencv" -Recurse -Depth 3 | Select-Object FullName
-
       - name: Set OpenCV environment variable
         shell: pwsh
         run: |
-          echo "OPENCV_DIR=C:\opencv\opencv\build" >> $env:GITHUB_ENV
+          echo "OPENCV_DIR=C:\opencv\build" >> $env:GITHUB_ENV
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
@@ -57,7 +52,7 @@ jobs:
       - name: Copy OpenCV DLL to test output
         shell: pwsh
         run: |
-          Copy-Item "C:\opencv\opencv\build\x64\vc16\bin\opencv_world4120d.dll" -Destination "x64\Debug\"
+          Copy-Item "C:\opencv\build\x64\vc16\bin\opencv_world4120d.dll" -Destination "x64\Debug\"
 
       - name: Run tests
         shell: pwsh
