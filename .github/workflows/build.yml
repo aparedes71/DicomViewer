@@ -35,6 +35,11 @@ jobs:
           opencv-installer.exe -oC:\ -y
           del opencv-installer.exe
 
+      - name: Debug OpenCV directory structure
+        shell: pwsh
+        run: |
+          Get-ChildItem "C:\opencv" -Recurse -Depth 3 | Select-Object FullName
+
       - name: Set OpenCV environment variable
         shell: pwsh
         run: |
