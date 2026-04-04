@@ -29,11 +29,11 @@ jobs:
 
       - name: Download and extract OpenCV
         if: steps.cache-opencv.outputs.cache-hit != 'true'
-        shell: pwsh
+        shell: cmd
         run: |
-          Invoke-WebRequest -Uri "https://github.com/opencv/opencv/releases/download/${{ env.OPENCV_VERSION }}/opencv-${{ env.OPENCV_VERSION }}-windows.exe" -OutFile "opencv-installer.exe"
-          Start-Process -FilePath "opencv-installer.exe" -ArgumentList "-oC:\" -Wait
-          Remove-Item "opencv-installer.exe"
+          curl -L -o opencv-installer.exe "https://github.com/opencv/opencv/releases/download/%OPENCV_VERSION%/opencv-%OPENCV_VERSION%-windows.exe"
+          opencv-installer.exe -oC:\ -y
+          del opencv-installer.exe
 
       - name: Set OpenCV environment variable
         shell: pwsh
