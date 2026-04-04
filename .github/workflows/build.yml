@@ -1,0 +1,68 @@
+name: Build and Test
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    env:
+      OPENCV_VERSION: "4.12.0"
+      SOLUTION_PATH: DicomViewer.sln
+      BUILD_CONFIGURATION: Debug
+      BUILD_PLATFORM: x64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache OpenCV
+        id: cache-opencv
+        uses: actions/cache@v4
+        with:
+          path: C:\opencv
+          key: opencv-${{ env.OPENCV_VERSION }}-windows
+
+      - name: Download and extract OpenCV
+        if: steps.cache-opencv.outputs.cache-hit != 'true'
+        shell: cmd
+        run: |
+          curl -L -o opencv-installer.exe "https://github.com/opencv/opencv/releases/download/%OPENCV_VERSION%/opencv-%OPENCV_VERSION%-windows.exe"
+          opencv-installer.exe -oC:\ -y
+          del opencv-installer.exe
+
+      - name: Set OpenCV environment variable
+        shell: pwsh
+        run: |
+          echo "OPENCV_DIR=C:\opencv\build" >> $env:GITHUB_ENV
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore ${{ env.SOLUTION_PATH }}
+
+      - name: Build solution
+        run: msbuild ${{ env.SOLUTION_PATH }} /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:Platform=${{ env.BUILD_PLATFORM }}
+
+      - name: Copy OpenCV DLL to test output
+        shell: pwsh
+        run: |
+          Copy-Item "C:\opencv\build\x64\vc16\bin\opencv_world4120d.dll" -Destination "x64\Debug\"
+
+      - name: Run tests
+        shell: pwsh
+        run: |
+          $env:PATH = "C:\opencv\build\x64\vc16\bin;$env:PATH"
+          & ".\x64\Debug\ImageProcessingTests.exe" --gtest_output=xml:test-results.xml; echo "Exit code: $LASTEXITCODE"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results.xml
