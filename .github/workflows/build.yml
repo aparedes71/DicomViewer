@@ -57,9 +57,8 @@ jobs:
       - name: Run tests
         shell: pwsh
         run: |
-          $result = & ".\x64\Debug\ImageProcessingTests.exe" --gtest_output=xml:test-results.xml
-          Write-Output $result
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:PATH = "C:\opencv\build\x64\vc16\bin;$env:PATH"
+          & ".\x64\Debug\ImageProcessingTests.exe" --gtest_output=xml:test-results.xml; echo "Exit code: $LASTEXITCODE"
 
       - name: Upload test results
         if: always()
