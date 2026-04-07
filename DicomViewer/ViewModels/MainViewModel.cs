@@ -75,6 +75,7 @@ namespace DicomViewer.ViewModels
                     }
                 }
                 _originalImageData = (ushort[])_dicomImageData.ImageData.Clone();
+                ApplyWindowLevel();
             }
         }
 
@@ -83,8 +84,8 @@ namespace DicomViewer.ViewModels
         private DicomImageData _dicomImageData;
         private ushort[] _originalImageData;
 
-        private int _windowValue = 255;
-        private int _levelValue = 127;
+        private int _windowValue = 34400;
+        private int _levelValue = 17200;
 
         private void ApplyWindowLevel()
         {
@@ -93,7 +94,6 @@ namespace DicomViewer.ViewModels
             ushort[] workingCopy = (ushort[])_originalImageData.Clone();
 
             ImageProcessingInterop.AdjustWindowLevel(workingCopy, _dicomImageData.Height, _dicomImageData.Width, _windowValue, _levelValue);
-
             PixelFormat pixelFormat = (_dicomImageData.BitFormat == 8) ? PixelFormats.Gray8 : PixelFormats.Gray16;
             int bytesPerPixel = (pixelFormat == PixelFormats.Gray8) ? 1 : 2;
 

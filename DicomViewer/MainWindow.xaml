@@ -16,10 +16,10 @@
 
         <StackPanel Grid.Row="1" Orientation="Vertical" Margin="10">
             <TextBlock Text="Window" />
-            <Slider Minimum="1" Maximum="255" Value="{Binding WindowValue}" />
+            <Slider Minimum="1" Maximum="65535" Value="{Binding WindowValue}" />
 
             <TextBlock Text="Level" />
-            <Slider Minimum="0" Maximum="255" Value="{Binding LevelValue}" />
+            <Slider Minimum="0" Maximum="65535" Value="{Binding LevelValue}" />
         </StackPanel>
     </Grid>
 </Window>

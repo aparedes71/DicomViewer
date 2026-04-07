@@ -34,11 +34,8 @@ namespace DicomViewer.Models
             Buffer.BlockCopy(rawBytes, 0, pixelArray, 0, rawBytes.Length);
             imageData.ImageData = pixelArray;
 
-            //imageData.ImageData = pixelData.GetFrame(0).Data;
-
             return imageData;
         }
-        //var image = new DicomImage(@"C:\Users\AndrewParedes\source\repos\DicomViewer\SampleData\MRBRAIN.DCM");   
     }
 
     
