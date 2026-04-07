@@ -7,6 +7,19 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Image Source="{Binding DicomImage}" Stretch="Uniform"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Image Grid.Row="0" Source="{Binding DicomImage}" Stretch="Uniform" />
+
+        <StackPanel Grid.Row="1" Orientation="Vertical" Margin="10">
+            <TextBlock Text="Window" />
+            <Slider Minimum="1" Maximum="255" Value="{Binding WindowValue}" />
+
+            <TextBlock Text="Level" />
+            <Slider Minimum="0" Maximum="255" Value="{Binding LevelValue}" />
+        </StackPanel>
     </Grid>
 </Window>

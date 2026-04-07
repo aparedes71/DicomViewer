@@ -16,40 +16,6 @@ namespace DicomViewer.ViewModels
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        protected void LoadImage(string imagePath = null)
-        {
-            if(imagePath != null)
-            {
-                _dicomImageData = _dicomImageLoader.LoadImage(imagePath);
-                PixelFormat _pixelFormat = (_dicomImageData.BitFormat == 8) ? PixelFormats.Gray8 : PixelFormats.Gray16; //temporaily only supports these 2 can create a case later to support larger subset of formats
-                int bytesPerPixel = (_pixelFormat == PixelFormats.Gray8) ? 1 : 2;
-                //Need to scale 12 bit values to 16 bit otherwise image just appears black TODO: fix hardcoded 12 since will not always be 12 and scaling will need to be calculated intelligently
-                if (_dicomImageData.BitFormat == 12)
-                {
-                    byte[] scaledData = new byte[_dicomImageData.ImageData.Length];
-                    for (int i = 0; i < scaledData.Length; i += 2)
-                    {
-                        ushort pixel = BitConverter.ToUInt16(_dicomImageData.ImageData, i);
-                        pixel = (ushort)(pixel << 4);
-                        Buffer.BlockCopy(BitConverter.GetBytes(pixel), 0, scaledData, i, 2);
-                    }
-                    _dicomImage = BitmapSource.Create(_dicomImageData.Width, _dicomImageData.Height, 96, 96, _pixelFormat, null, scaledData, _dicomImageData.Width * bytesPerPixel);
-                }
-                else
-                {
-                    _dicomImage = BitmapSource.Create(_dicomImageData.Width, _dicomImageData.Height,96,96,_pixelFormat,null,_dicomImageData.ImageData,_dicomImageData.Width * bytesPerPixel);
-                }
-            }
-        }
-
-        private BitmapSource _dicomImage;
-        private DicomImageLoader _dicomImageLoader;
-        private DicomImageData _dicomImageData;
         public BitmapSource DicomImage
         {
             get => _dicomImage;
@@ -60,10 +26,79 @@ namespace DicomViewer.ViewModels
             }
         }
 
+        public int WindowValue
+        {
+            get => _windowValue;
+            set
+            {
+                _windowValue = value;
+                OnPropertyChanged();
+                ApplyWindowLevel();
+            }
+        }
+
+        public int LevelValue
+        {
+            get => _levelValue;
+            set
+            {
+                _levelValue = value;
+                OnPropertyChanged();
+                ApplyWindowLevel();
+            }
+        }
+
         public MainViewModel()
         {
             _dicomImageLoader = new DicomImageLoader();
             LoadImage(@"C:\Users\AndrewParedes\source\repos\DicomViewer\SampleData\MRBRAIN.DCM");
         }
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected void LoadImage(string imagePath = null)
+        {
+            if(imagePath != null)
+            {
+                _dicomImageData = _dicomImageLoader.LoadImage(imagePath);
+                PixelFormat _pixelFormat = (_dicomImageData.BitFormat == 8) ? PixelFormats.Gray8 : PixelFormats.Gray16; //temporarily only supports these 2 can create a case later to support larger subset of formats
+                int bytesPerPixel = (_pixelFormat == PixelFormats.Gray8) ? 1 : 2;
+
+                if (_dicomImageData.BitFormat == 12)
+                {
+                    for (int i = 0; i < _dicomImageData.ImageData.Length; i++)
+                    {
+                        _dicomImageData.ImageData[i] = (ushort)(_dicomImageData.ImageData[i] << 4);
+                    }
+                }
+                _originalImageData = (ushort[])_dicomImageData.ImageData.Clone();
+            }
+        }
+
+        private BitmapSource _dicomImage;
+        private DicomImageLoader _dicomImageLoader;
+        private DicomImageData _dicomImageData;
+        private ushort[] _originalImageData;
+
+        private int _windowValue = 255;
+        private int _levelValue = 127;
+
+        private void ApplyWindowLevel()
+        {
+            if (_originalImageData == null) return;
+
+            ushort[] workingCopy = (ushort[])_originalImageData.Clone();
+
+            ImageProcessingInterop.AdjustWindowLevel(workingCopy, _dicomImageData.Height, _dicomImageData.Width, _windowValue, _levelValue);
+
+            PixelFormat pixelFormat = (_dicomImageData.BitFormat == 8) ? PixelFormats.Gray8 : PixelFormats.Gray16;
+            int bytesPerPixel = (pixelFormat == PixelFormats.Gray8) ? 1 : 2;
+
+            DicomImage = BitmapSource.Create(_dicomImageData.Width, _dicomImageData.Height, 96, 96, pixelFormat, null, workingCopy, _dicomImageData.Width * bytesPerPixel);
+        }
+
     }
 }

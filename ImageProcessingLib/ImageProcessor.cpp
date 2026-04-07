@@ -3,7 +3,7 @@
 
 
 extern "C" {
-    __declspec(dllexport) void AdjustBrightness(unsigned char* pixel_data, int img_height, int img_width, int brightness_adjustment)
+    __declspec(dllexport) void AdjustBrightness(unsigned short* pixel_data, int img_height, int img_width, int brightness_adjustment)
     {
         //Assuming grayscale image
         cv::Mat img = cv::Mat(img_width, img_height, CV_8UC1, pixel_data).clone(); //cloning to ensure if pixel_data is destroyed at some point the mat will not become invalid
@@ -19,4 +19,32 @@ extern "C" {
         }
 
     }
+
+    __declspec(dllexport) void AdjustWindowLevel(unsigned short* pixel_data, int img_height, int img_width, int window,int level) 
+    {
+        double min = level - (window / 2);
+        double max = level + (window / 2);
+
+
+        for (int pixel_idx = 0; pixel_idx < img_height*img_width; pixel_idx ++)
+        {
+            ushort old_pixel = pixel_data[pixel_idx];
+            if (old_pixel < min)
+            {
+                pixel_data[pixel_idx] = 0;
+            }
+            else if(old_pixel > max)
+            {
+                pixel_data[pixel_idx] = 255;
+            }
+            else 
+            {
+                pixel_data[pixel_idx] = ( 
+                    (old_pixel - min) / (max - min) 
+                    ) * 255;
+            }
+            
+        }
+    }
+
 }

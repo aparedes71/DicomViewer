@@ -9,7 +9,7 @@ using FellowOakDicom.Imaging;
 namespace DicomViewer.Models
 {
     public class DicomImageData
-    {   public byte[] ImageData { get; set; }
+    {   public ushort[] ImageData { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
         public int BitFormat { get; set; } // 8bit,12bit,16bit, etc
@@ -29,7 +29,12 @@ namespace DicomViewer.Models
             imageData.BitFormat = dataset.GetSingleValue<int>(DicomTag.BitsStored);
 
             var pixelData = DicomPixelData.Create(dataset);
-            imageData.ImageData = pixelData.GetFrame(0).Data;
+            byte[] rawBytes = pixelData.GetFrame(0).Data;
+            ushort[] pixelArray = new ushort[rawBytes.Length / 2];
+            Buffer.BlockCopy(rawBytes, 0, pixelArray, 0, rawBytes.Length);
+            imageData.ImageData = pixelArray;
+
+            //imageData.ImageData = pixelData.GetFrame(0).Data;
 
             return imageData;
         }
