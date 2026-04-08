@@ -2,7 +2,7 @@
 
 A Windows desktop application for viewing DICOM medical images. The UI is built with WPF (.NET 8) and image processing runs in a native C++ DLL via P/Invoke, keeping pixel-level operations off the managed heap.
 
-![Build and Test](https://github.com/AndrewParedes/DicomViewer/actions/workflows/build.yml/badge.svg)
+![Build and Test](https://github.com/aparedes71/DicomViewer/actions/workflows/build.yml/badge.svg)
 
 ---
 
